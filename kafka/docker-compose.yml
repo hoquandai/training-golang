@@ -8,6 +8,9 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - 22181:2181
+    volumes:
+      - zookeeper_data_1:/var/lib/zookeeper/data
+      - zookeeper_log_1:/var/lib/zookeeper/log
 
   zookeeper-2:
     image: confluentinc/cp-zookeeper:latest
@@ -16,6 +19,9 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - 32181:2181
+    volumes:
+      - zookeeper_data_2:/var/lib/zookeeper/data
+      - zookeeper_log_2:/var/lib/zookeeper/log
   
   kafka-1:
     image: confluentinc/cp-kafka:latest
@@ -33,6 +39,9 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_log_1:/tmp/kafka-logs
+
   kafka-2:
     image: confluentinc/cp-kafka:latest
     depends_on:
@@ -48,3 +57,13 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_log_2:/tmp/kafka-logs
+
+volumes:
+  zookeeper_data_1:
+  zookeeper_log_1:
+  zookeeper_data_2:
+  zookeeper_log_2:
+  kafka_log_1:
+  kafka_log_2:

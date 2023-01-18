@@ -5,6 +5,8 @@ import (
 	"context"
 	"strconv"
 	"time"
+	"log"
+	"os"
 	kafka "github.com/segmentio/kafka-go"
 )
 
@@ -18,10 +20,17 @@ func produce(ctx context.Context) {
 	// initialize a counter
 	i := 0
 
+	l := log.New(os.Stdout, "kafka writer: ", 0)
 	// intialize the writer with the broker addresses, and the topic
 	w := kafka.NewWriter(kafka.WriterConfig{
 		Brokers: []string{broker1Address, broker2Address},
 		Topic: topic,
+		// wait until we get 10 messages before writing
+		BatchSize: 10,
+		// no matter what happens, write all pending messages
+		// every 2 seconds
+		BatchTimeout: 2 * time.Second,
+		Logger: l,
 	})
 
 	for {
@@ -45,14 +54,29 @@ func produce(ctx context.Context) {
 	}
 }
 
-func consume(ctx context.Context) {
+func consume(ctx context.Context, groupID string, startOffset string) {
 	// initialize a new reader with the brokers and topic
 	// the groupID identifies the consumer and prevents
 	// it from receiving duplicate messages
+
+	offset := kafka.FirstOffset
+	if startOffset == "last" {
+		offset = kafka.LastOffset
+	}
+
+	l := log.New(os.Stdout, "kafka reader: ", 0)
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{broker1Address, broker2Address},
 		Topic: topic,
-		GroupID: "my-group",
+		GroupID: groupID,
+		MinBytes: 5,
+		// the kafka library requires you to set the MaxBytes
+		// in case the MinBytes are set
+		MaxBytes: 1e6,
+		// wait for at most 3 seconds before receiving new data
+		MaxWait: 3 * time.Second,
+		StartOffset: offset,
+		Logger: l,
 	})
 
 	for {
@@ -73,5 +97,7 @@ func main() {
 	// both the produce and consume functions are
 	// blocking
 	go produce(ctx)
-	consume(ctx)
+	// consume(ctx, "my-group", "first")
+	consume(ctx, "first-offset-group", "first")
+	// consume(ctx, "last-offset-group", "last")
 }

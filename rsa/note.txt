@@ -1,0 +1,14 @@
+HASH         OVERHEAD       RSA 1024      RSA 2048      RSA 3072      RSA 4096
+SHA-1           42             86            214           342           470
+SHA-224         58             70            198           326           454
+SHA-256         66             62            190           318           446
+SHA-384         98             30            158           286           414
+SHA-512        130             N/A           126           254           382
+
+mLen = kLenBits / 8 - 2 * hLenBits / 8 - 2
+
+* kLenBits = 2048
+* hLenBits = 256
+
+mLen = 2048 / 8 - 2 * 256 / 8 - 2 = 256 - 64 - 2 = 190
+=> the message has a maximum size of 190 bytes
